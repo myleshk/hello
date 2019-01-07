@@ -15,7 +15,7 @@
 	<style>
 		*{outline: none;}
 		html, body { margin: 0px; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;line-height: 1.5;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;background: #000;}
-		video {width:100%;height:auto;height:100%;object-fit: cover;}
+		video {width:100%;height:auto;height:100%;object-fit: cover;opacity: 0.1;}
 		.video {float: left; width: 25vw;height: 50vh;overflow: hidden;}
 		.video.one{width: 100vw;height: 100vh;}
 		.video.two{width: 50vw;height: 100vh;}
@@ -23,10 +23,11 @@
 		.video.four{width: 50vw;height: 50vh;}
 		.video.six{width: 33.33vw;height: 50vh;}
 		#selfVideoWrap{position: relative;}
-		#selfVideo {transform: rotateY(180deg);-webkit-transform:rotateY(180deg);-moz-transform:rotateY(180deg);}
+		#selfVideo.mirror {transform: rotateY(180deg);-webkit-transform:rotateY(180deg);-moz-transform:rotateY(180deg);}
 		#btnWrap{position: absolute;bottom:10px;left:0px;right:0px;text-align:center;z-index: 999;}
 		#mutebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
 		#videomutebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
+		#screensharebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
 		.fa-microphone-slash, .fa-video-slash{color:#e74c3c!important;}
 		#roomurl{display:inline-block;border-radius: 5px;border:1px solid #dcdcdc;background: #efefef;font-size: 80%;padding: 5px;margin-top: 5px;}
 		.message{width: 300px; position: fixed; bottom: 10px; right:10px;box-sizing: border-box; padding:10px;background: #fff; border-radius: 5px;z-index: 1000;}
@@ -59,6 +60,7 @@
 	var SIGNALING_SERVER = appURL();
 	var USE_AUDIO = true;
 	var USE_VIDEO = true;
+	var IS_SCREEN_STREAMING = false;
 	var ROOM_ID = getRoomName();
 
 	var ICE_SERVERS = [
@@ -293,6 +295,7 @@
 			videoWrap.setAttribute('id', 'selfVideoWrap');
 			const btnWrap = document.createElement('div');
 			btnWrap.setAttribute('id', 'btnWrap');
+
 			const muteBtn = document.createElement('button');
 			muteBtn.setAttribute('id', 'mutebtn');
 			muteBtn.className = 'fas fa-microphone';
@@ -301,6 +304,7 @@
 				e.target.className = 'fas fa-microphone' + (local_media_stream.getAudioTracks()[0].enabled ? '' : '-slash');
 			});
 			btnWrap.appendChild(muteBtn);
+
 			const videoMuteBtn = document.createElement('button');
 			videoMuteBtn.setAttribute('id', 'videomutebtn');
 			videoMuteBtn.className = 'fas fa-video';
@@ -309,11 +313,46 @@
 				e.target.className = 'fas fa-video' + (local_media_stream.getVideoTracks()[0].enabled ? '' : '-slash');
 			});
 			btnWrap.appendChild(videoMuteBtn);
-			videoWrap.appendChild(btnWrap);
+
+			if (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia || navigator.userAgent.indexOf("Firefox") >= 0) {
+				const screenShareBtn = document.createElement('button');
+				screenShareBtn.setAttribute('id', 'screensharebtn');
+				screenShareBtn.className = 'fas fa-desktop';
+				screenShareBtn.addEventListener('click', (e) => {
+					let screenMediaPromise;
+					if (!IS_SCREEN_STREAMING) {
+						if (navigator.getDisplayMedia) {
+							screenMediaPromise = navigator.getDisplayMedia({ video: true });
+						} else if (navigator.mediaDevices.getDisplayMedia) {
+							screenMediaPromise = navigator.mediaDevices.getDisplayMedia({ video: true });
+						} else {
+							screenMediaPromise = navigator.mediaDevices.getUserMedia({ video: { mediaSource: 'screen' } });
+						}
+					} else {
+						screenMediaPromise = navigator.mediaDevices.getUserMedia({ video: true });
+					}
+					screenMediaPromise.then(screenStream => {
+						if (IS_SCREEN_STREAMING) local_media_stream.getVideoTracks()[0].stop();
+						local_media_stream.removeTrack(local_media_stream.getVideoTracks()[0]);
+						local_media_stream.addTrack(screenStream.getVideoTracks()[0]);
+						IS_SCREEN_STREAMING = !IS_SCREEN_STREAMING;
+						document.getElementById('selfVideo').classList.toggle('mirror');
+					}).catch(e => {
+						alert('Unable to share screen.');
+						console.error(e);
+					});
+
+				});
+				btnWrap.appendChild(screenShareBtn);
+			}
+
+			videoWrap.appendChild(btnWrap); // append all buttons to the local video wrap
+
 			const local_media = document.createElement('video');
 			videoWrap.appendChild(local_media);
 			local_media.setAttribute('id', 'selfVideo');
 			local_media.setAttribute('playsinline', true);
+			local_media.className = 'mirror';
 			local_media.autoplay = true;
 			local_media.muted = true;
 			local_media.volume = 0
