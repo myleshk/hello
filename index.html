@@ -15,20 +15,22 @@
 	<style>
 		*{outline: none;}
 		html, body { margin: 0px; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;line-height: 1.5;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;background: #000;}
-		video {width:100%;height:auto;height:100%;object-fit: cover;opacity: 0.1;}
-		.video {float: left; width: 25vw;height: 50vh;overflow: hidden;}
+		video {width:100%;height:auto;height:100%;object-fit: cover;}
+		.video {float: left; width: 25vw;height: 50vh;overflow: hidden;position: relative;}
 		.video.one{width: 100vw;height: 100vh;}
 		.video.two{width: 50vw;height: 100vh;}
 		.video.three{width: 33.33vw;height: 100vh;}
 		.video.four{width: 50vw;height: 50vh;}
 		.video.six{width: 33.33vw;height: 50vh;}
-		#selfVideoWrap{position: relative;}
 		#selfVideo.mirror {transform: rotateY(180deg);-webkit-transform:rotateY(180deg);-moz-transform:rotateY(180deg);}
-		#btnWrap{position: absolute;bottom:10px;left:0px;right:0px;text-align:center;z-index: 999;}
+		#btnWrap{position: absolute;bottom:5px;left:0px;right:0px;text-align:center;z-index: 999;}
 		#mutebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
-		#videomutebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
-		#screensharebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
+		#videomutebtn, #screensharebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
 		.fa-microphone-slash, .fa-video-slash{color:#e74c3c!important;}
+		#selfVideo #screensharebtn{color:#27ae60;}
+		#selfVideo.mirror #screensharebtn{color:#ffffff;}
+		.video .fullscreenbtn{position: absolute;bottom:5px;right:0px;text-align:center;z-index: 999;padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
+		#closebtn{float: right;color:#333;text-decoration: none;font-size: 125%;line-height: 1.2;}
 		#roomurl{display:inline-block;border-radius: 5px;border:1px solid #dcdcdc;background: #efefef;font-size: 80%;padding: 5px;margin-top: 5px;}
 		.message{width: 300px; position: fixed; bottom: 10px; right:10px;box-sizing: border-box; padding:10px;background: #fff; border-radius: 5px;z-index: 1000;}
 		#tooManyParticipants{background: #c0392b;color: #fff;display: none;}
@@ -157,6 +159,14 @@
 				remote_media.controls = false;
 				peer_media_elements[peer_id] = remote_media;
 				document.body.appendChild(videoWrap);
+
+				const fullScreenBtn = document.createElement('button');
+				fullScreenBtn.className = 'fullscreenbtn fas fa-expand';
+				fullScreenBtn.addEventListener('click', (e) => {
+					remote_media.requestFullscreen();
+				});
+				videoWrap.appendChild(fullScreenBtn);
+
 				attachMediaStream(remote_media, event.stream);
 				resizeVideos();
 				checkParticipantsCount();
@@ -276,7 +286,9 @@
 			selection.removeAllRanges();
 			selection.addRange(range);
 		});
-
+		document.getElementById('closebtn').addEventListener('click', () => {
+			document.getElementById('intro').style.display = 'none';
+		});
 	}
 
 	function setup_local_media(callback, errorback) {
@@ -391,6 +403,7 @@
 
 <body onload='init()'>
 	<div id="intro" class="message">
+		<a href="javascript:void(0)" id="closebtn">&times;</a>
 		Invite your friends to video call by sharing this URL.
 		<span id="roomurl"></span>
 		<br /><a href="https://github.com/vasanthv/hello#readme" style="font-size: small;">Know More</a>
