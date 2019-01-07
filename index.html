@@ -9,6 +9,7 @@
 	<meta name="author" content="Vasanth.V" />
 	<meta name="application-name" content="Hello" />
 	<meta name="theme-color" content="#000000">
+	<!--- Insert Google Analytics -->
 	<link rel="icon" href="favicon.ico" type="image/x-icon" />
 	<link rel="icon" href="icon.png" type="image/png" />
 	<link rel="icon" href="icon.svg" sizes="any" type="image/svg+xml" />
@@ -87,7 +88,8 @@
 
 		signaling_socket.on('connect', function() {
 			// console.log("Connected to signaling server");
-			setup_local_media(function() {
+			if (local_media_stream) join_chat_channel(ROOM_ID, {});
+			else setup_local_media(function() {
 				/* once the user has given us access to their
 				 * microphone/camcorder, join the channel and start peering up */
 				join_chat_channel(ROOM_ID, {});
@@ -190,7 +192,7 @@
 								signaling_socket.emit('relaySessionDescription', { 'peer_id': peer_id, 'session_description': local_description });
 								// console.log("Offer setLocalDescription succeeded"); 
 							},
-							function() { Alert("Offer setLocalDescription failed!"); }
+							function() { alert("Offer setLocalDescription failed!"); }
 						);
 					},
 					function(error) {
@@ -348,6 +350,12 @@
 						local_media_stream.removeTrack(local_media_stream.getVideoTracks()[0]);
 						local_media_stream.addTrack(screenStream.getVideoTracks()[0]);
 						IS_SCREEN_STREAMING = !IS_SCREEN_STREAMING;
+						signaling_socket.disconnect();
+						init();
+						// if (peer_connection) {
+						// 	console.log(peer_connection.getSenders());
+						// 	// peer_connection.addTrack(screenStream.getVideoTracks()[0], screenStream);
+						// }
 						document.getElementById('selfVideo').classList.toggle('mirror');
 					}).catch(e => {
 						alert('Unable to share screen.');
