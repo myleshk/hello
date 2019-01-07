@@ -1,6 +1,6 @@
 {
   "name": "hello",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "A video chat app that works in all desktop & mobile browsers. No Signup. No Downloads. Just video chat.",
   "main": "server.js",
   "scripts": {
