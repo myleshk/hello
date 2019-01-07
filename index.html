@@ -352,10 +352,6 @@
 						IS_SCREEN_STREAMING = !IS_SCREEN_STREAMING;
 						signaling_socket.disconnect();
 						init();
-						// if (peer_connection) {
-						// 	console.log(peer_connection.getSenders());
-						// 	// peer_connection.addTrack(screenStream.getVideoTracks()[0], screenStream);
-						// }
 						document.getElementById('selfVideo').classList.toggle('mirror');
 					}).catch(e => {
 						alert('Unable to share screen.');
