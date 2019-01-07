@@ -162,12 +162,14 @@
 				peer_media_elements[peer_id] = remote_media;
 				document.body.appendChild(videoWrap);
 
-				const fullScreenBtn = document.createElement('button');
-				fullScreenBtn.className = 'fullscreenbtn fas fa-expand';
-				fullScreenBtn.addEventListener('click', (e) => {
-					remote_media.requestFullscreen();
-				});
-				videoWrap.appendChild(fullScreenBtn);
+				if (remote_media.requestFullscreen) {
+					const fullScreenBtn = document.createElement('button');
+					fullScreenBtn.className = 'fullscreenbtn fas fa-expand';
+					fullScreenBtn.addEventListener('click', (e) => {
+						remote_media.requestFullscreen();
+					});
+					videoWrap.appendChild(fullScreenBtn);
+				}
 
 				attachMediaStream(remote_media, event.stream);
 				resizeVideos();
