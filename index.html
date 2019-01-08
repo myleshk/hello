@@ -28,6 +28,7 @@
 		#btnWrap{position: absolute;bottom:0px;left:0px;right:0px;text-align:center;z-index: 999;background: rgba(50,50,50,0.6);}
 		#mutebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
 		#videomutebtn, #screensharebtn{padding:10px;margin:0px 10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
+		#screensharebtn:disabled{color:#ccc;opacity: 0.5;}
 		.fa-microphone-slash, .fa-video-slash{color:#e74c3c!important;}
 		.video .fullscreenbtn{position: absolute;bottom:0px;right:0px;text-align:center;z-index: 999;padding:10px;width:64px;font-size:2em;cursor: pointer;background: none;border:none;color:#fff;}
 		#closebtn{float: right;color:#333;text-decoration: none;font-size: 125%;line-height: 1.2;}
@@ -329,10 +330,10 @@
 			});
 			btnWrap.appendChild(videoMuteBtn);
 
+			const screenShareBtn = document.createElement('button');
+			screenShareBtn.setAttribute('id', 'screensharebtn');
+			screenShareBtn.className = 'fas fa-desktop';
 			if (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia || navigator.userAgent.indexOf("Firefox") >= 0) {
-				const screenShareBtn = document.createElement('button');
-				screenShareBtn.setAttribute('id', 'screensharebtn');
-				screenShareBtn.className = 'fas fa-desktop';
 				screenShareBtn.addEventListener('click', (e) => {
 					let screenMediaPromise;
 					if (!IS_SCREEN_STREAMING) {
@@ -360,8 +361,10 @@
 					});
 
 				});
-				btnWrap.appendChild(screenShareBtn);
+			} else {
+				screenShareBtn.setAttribute('disabled', true);
 			}
+			btnWrap.appendChild(screenShareBtn);
 
 			videoWrap.appendChild(btnWrap); // append all buttons to the local video wrap
 
