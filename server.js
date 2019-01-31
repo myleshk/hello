@@ -1,18 +1,18 @@
-const  PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-const  express = require('express');
-const  http = require('http');
-const  app = express()
-const  server = http.createServer(app);
-const  io  = require('socket.io').listen(server);
+const express = require('express');
+const http = require('http');
+const app = express();
+const server = http.createServer(app);
+const io = require('socket.io').listen(server);
 //io.set('log level', 2);
 
-app.use(express.static(__dirname));
-server.listen(PORT, null, function() {
+app.use(express.static(__dirname + '/public'));
+server.listen(PORT, null, function () {
     console.log("Listening on port " + PORT);
 });
 
-app.get(['/', '/:room'], (req, res) => res.sendFile(__dirname + '/index.html'));
+app.get(['/', '/:room'], (req, res) => res.sendFile(__dirname + '/public/index.html'));
 
 /**
  * Users will connect to the signaling server, after which they'll issue a "join"
@@ -97,7 +97,10 @@ io.sockets.on('connection', (socket) => {
         //console.log("["+ socket.id + "] relaying session description to [" + peer_id + "] ", session_description);
 
         if (peer_id in sockets) {
-            sockets[peer_id].emit('sessionDescription', {'peer_id': socket.id, 'session_description': session_description});
+            sockets[peer_id].emit('sessionDescription', {
+                'peer_id': socket.id,
+                'session_description': session_description
+            });
         }
     });
 });
