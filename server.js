@@ -6,6 +6,10 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io').listen(server);
 //io.set('log level', 2);
+const morgan = require('morgan');
+
+// log all requests
+app.use(morgan('combined'));
 
 app.use(express.static(__dirname + '/public'));
 server.listen(PORT, null, function () {
