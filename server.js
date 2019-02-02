@@ -13,7 +13,7 @@ app.use(morgan('combined'));
 
 app.use(express.static(__dirname + '/public'));
 server.listen(PORT, null, function () {
-    console.log("Listening on port " + PORT);
+    // console.log("Listening on port " + PORT);
 });
 
 app.get(['/', '/:room'], (req, res) => res.sendFile(__dirname + '/public/index.html'));
@@ -35,22 +35,22 @@ io.sockets.on('connection', (socket) => {
     socket.channels = {};
     sockets[socket.id] = socket;
 
-    //console.log("["+ socket.id + "] connection accepted");
+    // console.log("[" + socket.id + "] connection accepted");
     socket.on('disconnect', () => {
         for (const channel in socket.channels) {
             part(channel);
         }
-        //console.log("["+ socket.id + "] disconnected");
+        // console.log("[" + socket.id + "] disconnected");
         delete sockets[socket.id];
     });
 
     socket.on('join', (config) => {
-        //console.log("["+ socket.id + "] join ", config);
+        // console.log("[" + socket.id + "] join ", config);
         const channel = config.channel;
-        const userdata = config.userdata;
+        // const userdata = config.userdata;
 
         if (channel in socket.channels) {
-            //console.log("["+ socket.id + "] ERROR: already joined ", channel);
+            // console.log("[" + socket.id + "] ERROR: already joined ", channel);
             return;
         }
 
@@ -68,10 +68,10 @@ io.sockets.on('connection', (socket) => {
     });
 
     const part = (channel) => {
-        //console.log("["+ socket.id + "] part ");
+        // console.log("[" + socket.id + "] part ");
 
         if (!(channel in socket.channels)) {
-            //console.log("["+ socket.id + "] ERROR: not in ", channel);
+            // console.log("[" + socket.id + "] ERROR: not in ", channel);
             return;
         }
 
@@ -88,7 +88,7 @@ io.sockets.on('connection', (socket) => {
     socket.on('relayICECandidate', (config) => {
         let peer_id = config.peer_id;
         let ice_candidate = config.ice_candidate;
-        //console.log("["+ socket.id + "] relaying ICE candidate to [" + peer_id + "] ", ice_candidate);
+        // console.log("[" + socket.id + "] relaying ICE candidate to [" + peer_id + "] ", ice_candidate);
 
         if (peer_id in sockets) {
             sockets[peer_id].emit('iceCandidate', {'peer_id': socket.id, 'ice_candidate': ice_candidate});
@@ -98,7 +98,7 @@ io.sockets.on('connection', (socket) => {
     socket.on('relaySessionDescription', (config) => {
         let peer_id = config.peer_id;
         let session_description = config.session_description;
-        //console.log("["+ socket.id + "] relaying session description to [" + peer_id + "] ", session_description);
+        // console.log("[" + socket.id + "] relaying session description to [" + peer_id + "] ", session_description);
 
         if (peer_id in sockets) {
             sockets[peer_id].emit('sessionDescription', {

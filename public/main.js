@@ -1,11 +1,12 @@
 const appURL = () => {
-    const protocol = 'http' + ((location.hostname == 'localhost') ? '' : 's') + '://';
-    return protocol + location.hostname + ((location.hostname == 'localhost') ? ':3000' : '');
-}
+    return `${window.location.protocol}//${location.host}`;
+};
+
+const randomName = () => Math.random().toString(36).toUpperCase().substr(2, 4);
+
 const getRoomName = () => {
     let roomName = location.pathname.substring(1);
-    if (roomName == '') {
-        const randomName = () => Math.random().toString(36).substr(2, 6);
+    if (roomName === '') {
         roomName = randomName();
         const newurl = appURL() + '/' + roomName;
         window.history.pushState({url: newurl}, roomName, newurl);
@@ -19,11 +20,7 @@ var IS_SCREEN_STREAMING = false;
 var ROOM_ID = getRoomName();
 
 var ICE_SERVERS = [
-    {'urls': 'stun:stun.l.google.com:19302'},
     {'urls': 'stun:stun.stunprotocol.org:3478'},
-    {'urls': 'stun:stun.sipnet.net:3478'},
-    {'urls': 'stun:stun.ideasip.com:3478'},
-    {'urls': 'stun:stun.iptel.org:3478'}
 ];
 
 var signaling_socket = null;
@@ -37,12 +34,12 @@ var peer_media_elements = {};
 /* keep track of our <video>/<audio> tags, indexed by peer_id */
 
 function init() {
-    // console.log("Connecting to signaling server");
+    console.log("Connecting to signaling server");
     signaling_socket = io(SIGNALING_SERVER);
     signaling_socket = io();
 
     signaling_socket.on('connect', function () {
-        // console.log("Connected to signaling server");
+        console.log("Connected to signaling server");
         if (local_media_stream) join_chat_channel(ROOM_ID, {});
         else setup_local_media(function () {
             /* once the user has given us access to their
@@ -51,7 +48,7 @@ function init() {
         });
     });
     signaling_socket.on('disconnect', function () {
-        // console.log("Disconnected from signaling server");
+        console.log("Disconnected from signaling server");
         /* Tear down all of our peer connections and remove all the
          * media divs when we disconnect */
         for (peer_id in peer_media_elements) {
@@ -82,11 +79,11 @@ function init() {
      * connections in the network).
      */
     signaling_socket.on('addPeer', function (config) {
-        // console.log('Signaling server said to add peer:', config);
+        console.log('Signaling server said to add peer:', config);
         var peer_id = config.peer_id;
         if (peer_id in peers) {
             /* This could happen if the user joins multiple channels where the other peer is also in. */
-            // console.log("Already connected to peer ", peer_id);
+            console.log("Already connected to peer ", peer_id);
             return;
         }
         var peer_connection = new RTCPeerConnection({"iceServers": ICE_SERVERS}, {"optional": [{"DtlsSrtpKeyAgreement": true}]} // this will no longer be needed by chrome eventually (supposedly), but is necessary for now to get firefox to talk to chrome
@@ -103,9 +100,9 @@ function init() {
                     }
                 });
             }
-        }
+        };
         peer_connection.onaddstream = function (event) {
-            // console.log("onAddStream", event);
+            console.log("onAddStream", event);
             const videoWrap = document.createElement('div');
             videoWrap.className = 'video';
             const remote_media = document.createElement('video');
@@ -129,7 +126,7 @@ function init() {
             attachMediaStream(remote_media, event.stream);
             resizeVideos();
             checkParticipantsCount();
-        }
+        };
 
         /* Add our local stream */
         peer_connection.addStream(local_media_stream);
@@ -140,17 +137,17 @@ function init() {
          * create an offer, then send back an answer 'sessionDescription' to us
          */
         if (config.should_create_offer) {
-            // console.log("Creating RTC offer to ", peer_id);
+            console.log("Creating RTC offer to ", peer_id);
             peer_connection.createOffer(
                 function (local_description) {
-                    // console.log("Local offer description is: ", local_description);
+                    console.log("Local offer description is: ", local_description);
                     peer_connection.setLocalDescription(local_description,
                         function () {
                             signaling_socket.emit('relaySessionDescription', {
                                 'peer_id': peer_id,
                                 'session_description': local_description
                             });
-                            // console.log("Offer setLocalDescription succeeded");
+                            console.log("Offer setLocalDescription succeeded");
                         },
                         function () {
                             alert("Offer setLocalDescription failed!");
@@ -171,28 +168,28 @@ function init() {
      * "offer"), then the answerer sends one back (with type "answer").
      */
     signaling_socket.on('sessionDescription', function (config) {
-        // console.log('Remote description received: ', config);
+        console.log('Remote description received: ', config);
         var peer_id = config.peer_id;
         var peer = peers[peer_id];
         var remote_description = config.session_description;
-        // console.log(config.session_description);
+        console.log(config.session_description);
 
         var desc = new RTCSessionDescription(remote_description);
         var stuff = peer.setRemoteDescription(desc,
             function () {
-                // console.log("setRemoteDescription succeeded");
+                console.log("setRemoteDescription succeeded");
                 if (remote_description.type == "offer") {
-                    // console.log("Creating answer");
+                    console.log("Creating answer");
                     peer.createAnswer(
                         function (local_description) {
-                            // console.log("Answer description is: ", local_description);
+                            console.log("Answer description is: ", local_description);
                             peer.setLocalDescription(local_description,
                                 function () {
                                     signaling_socket.emit('relaySessionDescription', {
                                         'peer_id': peer_id,
                                         'session_description': local_description
                                     });
-                                    // console.log("Answer setLocalDescription succeeded");
+                                    console.log("Answer setLocalDescription succeeded");
                                 },
                                 function () {
                                     Alert("Answer setLocalDescription failed!");
@@ -201,7 +198,7 @@ function init() {
                         },
                         function (error) {
                             console.log("Error creating answer: ", error);
-                            // console.log(peer);
+                            console.log(peer);
                         });
                 }
             },
@@ -209,7 +206,7 @@ function init() {
                 console.log("setRemoteDescription error: ", error);
             }
         );
-        // console.log("Description Object: ", desc);
+        console.log("Description Object: ", desc);
     });
 
     /**
@@ -233,7 +230,7 @@ function init() {
      * all the peer sessions.
      */
     signaling_socket.on('removePeer', function (config) {
-        // console.log('Signaling server said to remove peer:', config);
+        console.log('Signaling server said to remove peer:', config);
         var peer_id = config.peer_id;
         if (peer_id in peer_media_elements) {
             document.body.removeChild(peer_media_elements[peer_id].parentNode);
@@ -266,7 +263,7 @@ function setup_local_media(callback, errorback) {
         return;
     }
     attachMediaStream = function (element, stream) {
-        // console.log('DEPRECATED, attachMediaStream will soon be removed.');
+        console.log('DEPRECATED, attachMediaStream will soon be removed.');
         element.srcObject = stream;
     };
     navigator.mediaDevices.getUserMedia({"audio": USE_AUDIO, "video": USE_VIDEO}).then((stream) => {
@@ -346,7 +343,8 @@ function setup_local_media(callback, errorback) {
         attachMediaStream(local_media, stream);
         resizeVideos();
         if (callback) callback();
-    }).catch(() => { /* user denied access to a/v */
+    }).catch((error) => { /* user denied access to a/v */
+        console.error(error);
         alert("This site will not work without camera/microphone access.");
         if (errorback) errorback();
     });
